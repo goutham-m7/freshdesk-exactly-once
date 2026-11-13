@@ -92,3 +92,19 @@ faults are deterministic. The SDK extension requires an explicit local Replaylab
 installation/source path; the core demo and CI need neither sibling repo.
 Public [REST docs](https://developers.freshdesk.com/api/) inform identifiers;
 optional ticket/conversation GET calls are not implemented.
+
+## Timeline surface
+
+This is an operating view for engineers investigating a support ticket, not an
+analytics dashboard. Its signature interaction is dropping the lost-acknowledgement
+fault exactly between downstream commit and retry. The keyboard button executes
+the identical runner. The two outcome lanes separate duplicate effects from new
+authorizations, with the persistent ledger below them.
+
+Use a cool, daytime workbench: paper `#f2f7fb`, ink `#163047`, muted `#475c70`,
+line `#bbcedb`, action `#134fa1`, safe `#08634f`, unsafe `#9d3039`. Platform sans
+keeps controls native; monospace is limited to literal identities and order IDs.
+No remote fonts, icon packages or image dependencies. Collapse the lanes on
+mobile, scroll only the ledger horizontally, preserve visible keyboard focus,
+and report loading/failure states without hiding a previous successful run.
+Observed browser evidence is in `evidence/desktop.png` and `evidence/mobile.png`.

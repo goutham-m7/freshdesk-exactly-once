@@ -1,0 +1,15 @@
+Freshdesk Exactly-One Action Replay
+Synthetic only; no Freshdesk account, real orders, refunds, or replies.
+Fault: order committed, acknowledgement timed out (synthetic 504).
+Injected redeliveries: 100
+Duplicate downstream effects: naive=100 safe=0
+Replay orders: naive=101 safe=1
+Distinct updates processed: 2/2
+Safe total orders: 3 (1 replayed action + 2 distinct updates)
+Restart recovery: 107.59 ms; leased -> done; downstream orders=1
+Recovery includes remaining 50 ms lease + new process + reconciliation; not an SLA.
+  [delivery 1] replacement committed in both downstream ledgers
+  [fault] 504: acknowledgement lost AFTER downstream commit
+  [100 redeliveries] naive=101 orders; safe=1; same action key, same payload: receipt deduplicated; outbox retried original key; downstream returned original order
+  [distinct updates] 2 new revisions accepted on the same ticket: 2 new authorizations, 2 orders
+Guarantee requires downstream atomic idempotency; the outbox alone is insufficient.
