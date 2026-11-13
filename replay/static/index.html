@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Freshdesk Exactly-One Action Replay</title>
+<link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+</head>
+<body>
+<main>
+<header><h1>Exactly-One Action Replay</h1><span class="local">Local · synthetic · no account</span></header>
+<section class="intro"><h2>A retry is not a new replacement order.</h2>
+<p>Reproduce a committed action with a lost acknowledgement. Compare a naïve receiver against a durable outbox and a downstream idempotency key.</p></section>
+<section aria-labelledby="ticket-title" class="workbench">
+<div class="ticket"><h2 id="ticket-title">Ticket #4201</h2><p>Conversation #701 · replacement request</p><code>SYNTHETIC-ORDER-17 / quantity 1</code></div>
+<div class="injection"><button id="fault" draggable="true">504: acknowledgement lost</button><p>Drag the fault into the timeline, or use the run button.</p></div>
+<ol class="flow" aria-label="Ticket delivery timeline"><li>Ticket update received</li><li>Downstream order committed</li><li><button id="run">Drop timeout here / run 100 redeliveries</button></li><li>Retry the same action identity</li></ol>
+<p id="status" role="status" aria-live="polite">Ready. No experiment has run yet.</p>
+</section>
+<section id="results" hidden aria-labelledby="results-title">
+<h2 id="results-title">Same delivery. Different outcome.</h2>
+<div class="comparison"><article class="naive"><h3>Naïve receiver</h3><p id="naive-count" class="count"></p><p>No durable identity. The first retry creates order-0002.</p><div id="naive-orders" class="orders"></div></article>
+<article class="safe"><h3>Durable receiver</h3><p id="safe-count" class="count"></p><p>Same key + same payload: return the original order.</p><div id="safe-orders" class="orders"></div></article></div>
+<p id="distinct"></p><p id="recovery" class="recovery"></p>
+<h2>Decision timeline</h2><ol id="timeline" class="decisions"></ol>
+<h2>Durable action ledger</h2><p>Three distinct authorizations on one ticket. The first action required two delivery attempts, not two orders.</p>
+<div class="table-scroll"><table><thead><tr><th>Source revision</th><th>Action key</th><th>Attempts</th><th>State</th><th>Downstream result</th></tr></thead><tbody id="ledger"></tbody></table></div>
+<p id="receipts"></p><button id="download">Download complete JSON ledgers</button>
+</section>
+<footer><p><strong>Exactly one side effect requires downstream cooperation.</strong> The outbox alone cannot close the commit/acknowledgement gap. Messages remain at least once.</p>
+<p>Based on a <a href="https://community.freshworks.com/ticketing-agent-productivity-11362/webhook-called-twice-5min-apart-21958">solved 2021 Freshworks retry report</a>, not a claim of a current defect. No real Freshdesk calls, refunds, orders, or replies.</p></footer>
+</main></body></html>
