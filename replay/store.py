@@ -1,5 +1,7 @@
 """Transactional receipt ledger and one-action-per-event outbox."""
 
+import math
+import uuid
 from pathlib import Path
 
 from replay.db import connection
@@ -47,3 +49,36 @@ class Store:
     def receipts(self) -> list[dict]:
         with connection(self.path) as db:
             return [dict(row) for row in db.execute("SELECT * FROM receipts ORDER BY id")]
+
+    def claim(self, *, now: float, lease_seconds: float) -> dict | None:
+        if not math.isfinite(now) or not math.isfinite(lease_seconds) or lease_seconds <= 0:
+            raise ValueError("clock and positive lease must be finite")
+        with connection(self.path, write=True) as db:
+            row = db.execute(
+                "SELECT * FROM actions WHERE state='pending' OR "
+                "(state='leased' AND lease_until<=?) ORDER BY rowid LIMIT 1", (now,)
+            ).fetchone()
+            if row is None:
+                return None
+            token = uuid.uuid4().hex
+            db.execute(
+                "UPDATE actions SET state='leased',token=?,lease_until=?,attempts=attempts+1 "
+                "WHERE key=?", (token, now + lease_seconds, row["key"])
+            )
+            return dict(db.execute("SELECT * FROM actions WHERE key=?", (row["key"],)).fetchone())
+
+    def finish(self, claim: dict, *, result: str) -> bool:
+        with connection(self.path, write=True) as db:
+            return db.execute(
+                "UPDATE actions SET state='done',result=?,error=NULL,token=NULL,lease_until=NULL "
+                "WHERE key=? AND token=? AND state='leased'",
+                (result, claim["key"], claim["token"])
+            ).rowcount == 1
+
+    def retry(self, claim: dict, *, error: str) -> bool:
+        with connection(self.path, write=True) as db:
+            return db.execute(
+                "UPDATE actions SET state='pending',error=?,token=NULL,lease_until=NULL "
+                "WHERE key=? AND token=? AND state='leased'",
+                (error, claim["key"], claim["token"])
+            ).rowcount == 1
