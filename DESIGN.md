@@ -81,8 +81,14 @@ not tested: no account is assumed and those integrations are not built.
 
 ## Reuse decision
 
-The spec names replaylab/agentprobe concepts but supplies no licensed public code
-location; none exists in this empty repo. No code is copied or claimed integrated.
-This original fault runner implements only commit/acknowledgement replay. Public
-[REST docs](https://developers.freshdesk.com/api/) inform identifiers; optional
-GET /api/v2/tickets/{id} and /api/v2/tickets/{id}/conversations are not implemented.
+The core remains original and standard-library-only. The separately authored
+personal Replaylab project is consumed through its public SDK in
+`extensions/replaylab_freshdesk.py`; no source or prompts are copied. It records
+three leaf delivery boundaries (lost acknowledgement, redelivery, distinct
+update), then replays all three without adding downstream effects. This is
+boundary trace replay, separate from the core's actual duplicate-delivery test.
+Agentprobe's conversational scoring is not needed for this non-LLM failure;
+faults are deterministic. The SDK extension requires an explicit local Replaylab
+installation/source path; the core demo and CI need neither sibling repo.
+Public [REST docs](https://developers.freshdesk.com/api/) inform identifiers;
+optional ticket/conversation GET calls are not implemented.
