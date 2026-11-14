@@ -1,10 +1,15 @@
 # Freshdesk Exactly-One Action Replay
 
-A support integration can commit a replacement order, lose the acknowledgement,
-and create a second order when the ticket webhook retries. A
-[solved Freshworks Community report from August 2021](https://community.freshworks.com/ticketing-agent-productivity-11362/webhook-called-twice-5min-apart-21958)
-explains a 504 followed by a retry five minutes later. That is historical evidence
-of retry behavior, **not evidence of a current Freshworks double-refund defect**.
+A local replay showing how ticket-webhook retries can avoid duplicate downstream actions.
+
+## The problem
+
+Support teams connect ticket automations to order systems. If an action commits but its acknowledgement is lost, retrying the webhook can create a second replacement order unless both receiver and downstream service preserve the operation's identity.
+
+- [A solved Freshworks Community report](https://community.freshworks.com/ticketing-agent-productivity-11362/webhook-called-twice-5min-apart-21958) (2021-08-17; staff answer 2021-08-19) describes the same ticket webhook arriving twice: Freshworks attributed the second call, five minutes later, to a retry after a 504 timeout. This is historical retry evidence, not a current double-refund defect.
+- [Stripe's idempotent-request documentation](https://docs.stripe.com/api/idempotent_requests) (undated; checked 2026-11-14) explains that retrying after connection errors can create duplicate objects or updates without idempotency, and that API v1 returns the saved result for the same key.
+
+This synthetic replay compares a naïve handler with durable intake, an outbox, leases and a mock downstream idempotency contract; it demonstrates exactly-one effects under that contract, not universal exactly-once delivery or live Freshdesk behavior.
 
 **100 injected redeliveries: 100 duplicate effects naïvely; zero with durable
 identity and downstream idempotency. Two distinct updates still execute.**
